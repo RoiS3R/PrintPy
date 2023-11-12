@@ -1,0 +1,18 @@
+# env.example -> .env
+SMTP_USER=j.doe@test.com
+SMTP_PASS=YOUR_PASSWORD
+SMTP_HOST=imap.test.com
+SMTP_PORT=993
+SMTP_SECURE=true
+SMTP_TLS=true
+SMTP_IGNORETLS=false # if true, SMTP_TLS will be ignored
+REFRESH_INTERVAL=30 #seconds
+
+# printer uri and name
+PRINT_COMMAND=Druck** #the script will search for this string in the mail subject to determine if it should print the mail
+PRINTER1_URI=
+PRINTER1_NAME=Kyocera TASKalfa 4054ci
+# PRINTER2_URI=
+# PRINTER2_NAME=
+# PRINTER3_URI=
+# PRINTER3_NAME=
