@@ -6,9 +6,7 @@ import os
 import cups
 import logging
 from dotenv import load_dotenv
-import imaplib
 import email
-from email.header import decode_header
 
 # Load environment variables
 load_dotenv()
@@ -79,27 +77,9 @@ def print_pdf(printer_url, pdf_file_path, color_mode='bw', duplex='false', media
         return
 
     # Print the file
-        print_job_id = conn.printFile(
-            printer_name, pdf_file_path, "Python Print Job", options, callback=print_callback)
-        logging.info(f"Print job sent. Job ID: {print_job_id}")
-
-    def print_callback(job_id, job_status, user_data):
-        """
-        Callback function to update on the success of the print job.
-
-        Args:
-            job_id (int): The ID of the print job.
-            job_status (str): The status of the print job.
-            user_data (Any): Any user data passed to the printFile() function.
-
-        Returns:
-            None
-        """
-        if job_status == cups.JOB_COMPLETED:
-            logging.info(f"Print job {job_id} completed successfully.")
-        else:
-            logging.error(
-                f"Print job {job_id} failed with status {job_status}.")
+    print_job_id = conn.printFile(
+        printer_name, pdf_file_path, "Python Print Job", options)
+    logging.info(f"Print job sent. Job ID: {print_job_id}")
 
 # Function to save a file to the local file system, handling duplicates
 
@@ -241,31 +221,30 @@ def get_page_size(subject):
     return page_size
 
 
-def delete_emails():
+def delete_emails(mail):
     """
-    Deletes an email from the server.
+    Deletes emails with a specific subject from the selected mailbox.
+
+    Args:
+        mail (IMAP4_SSL): An instance of the IMAP4_SSL class representing the mailbox.
 
     Returns:
         None
     """
     # Select the mailbox to work with
-    imap.select('inbox/Druck')
+    mail.select('inbox/Druck')
 
     # Search for emails with the specified subject
-    status, messages = imap.search(None, f'SUBJECT {PRINT_COMMAND}"')
+    status, messages = mail.search(None, f'SUBJECT {PRINT_COMMAND}"')
     try:
         for message in messages[0].split():
-            imap.store(message, "+FLAGS", "\\Deleted")
+            mail.store(message, "+FLAGS", "\\Deleted")
 
         # Permanently delete the messages marked for deletion
-        imap.expunge()
+        mail.expunge()
     except:
         logging.info("No emails to delete.")
         return
-
-    # Close the mailbox and logout from the account
-    imap.close()
-    imap.logout()
 
 # Function to check emails and trigger printing
 
@@ -343,7 +322,7 @@ def check_emails():
                         delete_file('attachments', filename)
 
     # Delete emails
-    delete_emails()
+    delete_emails(mail)
     logging.info("Emails deleted.")
 
     # Close email connection
